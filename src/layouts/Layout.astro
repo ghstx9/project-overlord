@@ -4,9 +4,14 @@ import "../styles/global.css";
 interface Props {
     title: string;
     description?: string;
+    shouldPadHeader?: boolean;
 }
 
-const { title, description = "A Project Overlord Blog" } = Astro.props;
+const {
+    title,
+    description = "A Project Overlord Blog",
+    shouldPadHeader = false,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -18,47 +23,54 @@ const { title, description = "A Project Overlord Blog" } = Astro.props;
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="generator" content={Astro.generator} />
         <title>{title}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lexend:wght@100..900&display=swap"
+            rel="stylesheet"
+        />
     </head>
     <body
-        class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased min-h-screen flex flex-col lexend-font"
+        class="bg-zinc-950 text-zinc-100 antialiased min-h-screen flex flex-col lexend-font"
     >
         <header
-            class="py-6 px-4 md:px-8 border-b border-zinc-200 dark:border-zinc-800"
+            class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4"
         >
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <a href="/" class="text-xl font-bold tracking-tighter lexend-font"
+            <div
+                class="flex items-center justify-between w-full max-w-2xl px-6 py-3 bg-zinc-900/40 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl"
+            >
+                <a
+                    href="/"
+                    class="text-lg font-bold tracking-tight text-white lexend-font"
                     >Project Overlord</a
                 >
                 <nav>
                     <ul
-                        class="flex gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400 lexend-font"
+                        class="flex gap-6 text-sm font-medium text-white lexend-font"
                     >
                         <li>
                             <a
                                 href="/"
-                                class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                                >Home</a>
+                                class="hover:text-zinc-300 transition-colors"
+                                >Home</a
+                            >
                         </li>
                         <li>
                             <a
                                 href="/about"
-                                class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-                                >About</a>
+                                class="hover:text-zinc-300 transition-colors"
+                                >About</a
+                            >
                         </li>
                     </ul>
                 </nav>
             </div>
         </header>
 
-        <main class="flex-grow px-4 md:px-8 py-12">
-            <div class="max-w-4xl mx-auto w-full">
-                <slot />
-            </div>
+        <main class={`flex-grow ${shouldPadHeader ? "pt-32" : ""}`}>
+            <slot />
         </main>
 
         <footer
-            class="py-8 px-4 md:px-8 border-t border-zinc-200 dark:border-zinc-800 text-center text-sm text-zinc-500"
+            class="py-8 px-4 md:px-8 border-t border-zinc-800 text-center text-sm text-zinc-500"
         >
             <p>
                 &copy; {new Date().getFullYear()} Ricky Marove. All rights reserved.
