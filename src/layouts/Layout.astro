@@ -4,9 +4,14 @@ import "../styles/global.css";
 interface Props {
     title: string;
     description?: string;
+    shouldPadHeader?: boolean;
 }
 
-const { title, description = "A Project Overlord Blog" } = Astro.props;
+const {
+    title,
+    description = "A Project Overlord Blog",
+    shouldPadHeader = false,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -60,7 +65,7 @@ const { title, description = "A Project Overlord Blog" } = Astro.props;
             </div>
         </header>
 
-        <main class="flex-grow">
+        <main class={`flex-grow ${shouldPadHeader ? "pt-32" : ""}`}>
             <slot />
         </main>
 
