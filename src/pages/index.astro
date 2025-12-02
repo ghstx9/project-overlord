@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { supabase } from "../lib/supabase";
-import Silk from "../components/Silk.jsx";
+import Balatro from "../components/Balatro.jsx";
 
 const { data: posts, error } = await supabase
 	.from("posts")
@@ -21,12 +21,11 @@ if (error) {
 		>
 			<!-- Silk Background -->
 			<div class="absolute inset-0 w-full h-full bg-zinc-950">
-				<Silk
-					client:only="react"
-					color="#5227ff"
-					speed={20}
-					scale={2}
-					noiseIntensity={1.2}
+				<Balatro
+					isRotate={false}
+					mouseInteraction={true}
+					pixelFilter={700}
+					client:load
 				/>
 			</div>
 
