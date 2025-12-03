@@ -21,7 +21,7 @@ export default function LoginForm() {
             if (error) throw error;
 
             // Redirect on success
-            window.location.href = '/';
+            window.location.href = '/admin';
         } catch (err) {
             setError(err.message);
         } finally {
