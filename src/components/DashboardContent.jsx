@@ -4,15 +4,55 @@ import StatCard from './StatCard';
 
 export default function DashboardContent() {
     const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [signingOut, setSigningOut] = useState(false);
 
     useEffect(() => {
-        // Get current user session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        async function loadUserData() {
+            try {
+                // Get current user session
+                const { data: { session } } = await supabase.auth.getSession();
+                const currentUser = session?.user ?? null;
+                setUser(currentUser);
+
+                if (currentUser) {
+                    // Fetch admin profile
+                    const { data: profileData, error: profileError } = await supabase
+                        .from('admin_profiles')
+                        .select('*')
+                        .eq('id', currentUser.id)
+                        .single();
+
+                    if (profileError) {
+                        console.error('Error fetching profile:', profileError);
+                    } else {
+                        setProfile(profileData);
+                    }
+
+                    // Fetch recent activity logs
+                    const { data: activityData, error: activityError } = await supabase
+                        .from('activity_logs')
+                        .select('*')
+                        .eq('user_id', currentUser.id)
+                        .order('created_at', { ascending: false })
+                        .limit(10);
+
+                    if (activityError) {
+                        console.error('Error fetching activities:', activityError);
+                    } else {
+                        setActivities(activityData || []);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadUserData();
 
         // Listen for auth changes
         const {
@@ -27,12 +67,64 @@ export default function DashboardContent() {
     const handleSignOut = async () => {
         setSigningOut(true);
         try {
+            // Log the logout activity before signing out
+            try {
+                const { logLogout } = await import('../lib/activityLogger.js');
+                await logLogout();
+            } catch (logError) {
+                console.error('Error logging logout:', logError);
+            }
+
             await supabase.auth.signOut();
             window.location.href = '/login';
         } catch (error) {
             console.error('Error signing out:', error);
             setSigningOut(false);
         }
+    };
+
+    // Helper function to format activity action for display
+    const formatActivityAction = (activity) => {
+        const actionMap = {
+            'user_login': 'Logged in',
+            'user_logout': 'Logged out',
+            'post_created': `Created post`,
+            'post_updated': `Updated post`,
+            'post_deleted': `Deleted post`,
+            'settings_updated': 'Updated settings',
+            'file_uploaded': 'Uploaded file',
+        };
+        return actionMap[activity.action] || activity.action;
+    };
+
+    // Helper function to get icon for activity
+    const getActivityIcon = (action) => {
+        const iconMap = {
+            'user_login': '🔓',
+            'user_logout': '🔒',
+            'post_created': '📝',
+            'post_updated': '✏️',
+            'post_deleted': '🗑️',
+            'settings_updated': '⚙️',
+            'file_uploaded': '📁',
+        };
+        return iconMap[action] || '📋';
+    };
+
+    // Helper function to format time ago
+    const formatTimeAgo = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        if (seconds < 60) return 'just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} min ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        const days = Math.floor(hours / 24);
+        if (days < 7) return `${days} day${days > 1 ? 's' : ''} ago`;
+        return date.toLocaleDateString();
     };
 
     if (loading) {
@@ -62,11 +154,16 @@ export default function DashboardContent() {
             {/* Welcome Header */}
             <div className="space-y-2">
                 <h1 className="text-4xl md:text-5xl font-bold text-white lexend-font">
-                    Welcome back!
+                    Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}!
                 </h1>
                 <p className="text-lg text-zinc-400">
                     {user.email}
                 </p>
+                {profile?.role && (
+                    <p className="text-sm text-zinc-500">
+                        Role: <span className="text-zinc-400 capitalize">{profile.role}</span>
+                    </p>
+                )}
             </div>
 
             {/* Stats Grid */}
@@ -134,24 +231,28 @@ export default function DashboardContent() {
                         Recent Activity
                     </h2>
                     <div className="space-y-4">
-                        {[
-                            { action: 'New user registered', time: '2 min ago', icon: '👤' },
-                            { action: 'Post published', time: '15 min ago', icon: '📝' },
-                            { action: 'Settings updated', time: '1 hour ago', icon: '⚙️' },
-                            { action: 'File uploaded', time: '2 hours ago', icon: '📁' },
-                            { action: 'Analytics viewed', time: '3 hours ago', icon: '📊' },
-                        ].map((item, index) => (
-                            <div
-                                key={index}
-                                className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
-                            >
-                                <span className="text-xl">{item.icon}</span>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-white truncate">{item.action}</p>
-                                    <p className="text-xs text-zinc-500">{item.time}</p>
+                        {activities.length > 0 ? (
+                            activities.map((activity) => (
+                                <div
+                                    key={activity.id}
+                                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors"
+                                >
+                                    <span className="text-xl">{getActivityIcon(activity.action)}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-white truncate">
+                                            {formatActivityAction(activity)}
+                                        </p>
+                                        <p className="text-xs text-zinc-500">
+                                            {formatTimeAgo(activity.created_at)}
+                                        </p>
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-zinc-500">
+                                <p className="text-sm">No recent activity</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </div>

@@ -20,6 +20,16 @@ export default function LoginForm() {
 
             if (error) throw error;
 
+            // Log the login activity
+            try {
+                const { logLogin, updateLastLogin } = await import('../lib/activityLogger.js');
+                await logLogin();
+                await updateLastLogin();
+            } catch (logError) {
+                console.error('Error logging activity:', logError);
+                // Don't block login if logging fails
+            }
+
             // Redirect on success
             window.location.href = '/admin';
         } catch (err) {
