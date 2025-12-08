@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import StatCard from './StatCard';
 import {
     LockOpen, Lock, ScrollText, PencilLine, Trash2, Settings2,
-    File, ClipboardList, ChartSpline, UsersRound, Save, Check,
+    File, ClipboardList, ChartSpline, UsersRound, Baby, Check,
     NotebookPen, User, BellRing, Cpu
 } from 'lucide-react';
 
@@ -188,9 +188,9 @@ export default function DashboardContent() {
                     trendValue="0.1%"
                 />
                 <StatCard
-                    title="Active Sessions"
+                    title="Recent Logins"
                     value={0}
-                    icon={<Save className="w-5 h-5" />}
+                    icon={<Baby className="w-5 h-5" />}
                     trend="down"
                     trendValue="0%"
                 />
