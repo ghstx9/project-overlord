@@ -13,7 +13,7 @@ import {
     ArrowLeft, FileText
 } from 'lucide-react';
 
-export default function PostEditor({ postId = null }) {
+export default function PostEditor({ postId = undefined }) {
     const [formData, setFormData] = useState({
         title: '',
         slug: '',

@@ -3,10 +3,10 @@ import Layout from "../../../../layouts/Layout.astro";
 import PostEditor from "../../../../components/PostEditor.jsx";
 import Balatro from "../../../../components/Balatro.jsx";
 
-const { id } = Astro.params;
+// Disable prerendering for this dynamic route (SSR mode)
+export const prerender = false;
 
-// Ensure id is a string (not undefined)
-const postId = id ?? null;
+const { id } = Astro.params;
 ---
 
 <Layout title="Edit Post - Project Overlord" shouldPadHeader={true}>
@@ -30,7 +30,7 @@ const postId = id ?? null;
 
         <!-- Post Editor with ID -->
         <div class="relative z-10">
-            <PostEditor postId={postId} client:load />
+            <PostEditor postId={id} client:load />
         </div>
     </div>
 </Layout>
