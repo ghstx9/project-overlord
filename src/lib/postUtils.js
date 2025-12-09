@@ -152,8 +152,8 @@ export async function uploadCoverImage(file) {
 
         // Generate unique filename
         const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `covers/${fileName}`;
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`; // Randomized file name
+        const filePath = `covers/${fileName}`; // Path in the Supabase Storage (means this is not locally stored)
 
         const { error: uploadError } = await supabase.storage
             .from('images')
@@ -172,37 +172,6 @@ export async function uploadCoverImage(file) {
         return { success: true, url: publicUrl };
     } catch (error) {
         console.error('Error uploading image:', error);
-        return { success: false, error: error.message };
-    }
-}
-
-/**
- * Delete a cover image from Supabase Storage
- * @param {string} url - The public URL of the image
- * @returns {Promise<{success: boolean, error?: string}>}
- */
-export async function deleteCoverImage(url) {
-    try {
-        // Extract file path from URL
-        const urlParts = url.split('/images/');
-        if (urlParts.length < 2) {
-            return { success: false, error: 'Invalid image URL' };
-        }
-
-        const filePath = urlParts[1];
-
-        const { error } = await supabase.storage
-            .from('images')
-            .remove([filePath]);
-
-        if (error) {
-            console.error('Error deleting image:', error);
-            return { success: false, error: error.message };
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error('Error deleting image:', error);
         return { success: false, error: error.message };
     }
 }
