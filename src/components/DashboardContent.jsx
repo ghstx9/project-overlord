@@ -11,6 +11,8 @@ export default function DashboardContent() {
     const [user, setUser] = useState(null);
     const [profile, setProfile] = useState(null);
     const [activities, setActivities] = useState([]);
+    const [totalPosts, setTotalPosts] = useState(0);
+    const [totalUsers, setTotalUsers] = useState(0);
     const [loading, setLoading] = useState(true);
     const [signingOut, setSigningOut] = useState(false);
 
@@ -48,6 +50,28 @@ export default function DashboardContent() {
                         console.error('Error fetching activities:', activityError);
                     } else {
                         setActivities(activityData || []);
+                    }
+
+                    // Fetch total posts count
+                    const { count: postsCount, error: postsCountError } = await supabase
+                        .from('posts')
+                        .select('*', { count: 'exact', head: true });
+
+                    if (!postsCountError) {
+                        setTotalPosts(postsCount || 0);
+                    } else {
+                        console.error('Error fetching posts count:', postsCountError);
+                    }
+
+                    // Fetch total admin users count
+                    const { count: usersCount, error: usersCountError } = await supabase
+                        .from('admin_profiles')
+                        .select('*', { count: 'exact', head: true });
+
+                    if (!usersCountError) {
+                        setTotalUsers(usersCount || 0);
+                    } else {
+                        console.error('Error fetching users count:', usersCountError);
                     }
                 }
             } catch (error) {
@@ -175,14 +199,14 @@ export default function DashboardContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Total Posts"
-                    value={0}
+                    value={totalPosts}
                     icon={<ChartSpline className="w-5 h-5" />}
                     trend="up"
                     trendValue="0%"
                 />
                 <StatCard
                     title="Total Users"
-                    value={1}
+                    value={totalUsers}
                     icon={<UsersRound className="w-5 h-5" />}
                     trend="up"
                     trendValue="0.1%"
